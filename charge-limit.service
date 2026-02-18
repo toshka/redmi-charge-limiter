@@ -1,0 +1,13 @@
+[Unit]
+Description=Set battery charge limit on boot
+# Re-run when AC adapter is connected (see charge-limit-ac.rules)
+After=local-fs.target
+
+[Service]
+Type=oneshot
+ExecStart=/usr/local/bin/set_charge_limit.sh enable
+RemainAfterExit=yes
+User=root
+
+[Install]
+WantedBy=multi-user.target

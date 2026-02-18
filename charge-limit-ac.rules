@@ -1,0 +1,10 @@
+# Udev rule: re-apply charge limit every time the AC adapter is plugged in.
+# The EC firmware appears to reset the LONL flag on charger connect events,
+# so we re-run the toggle sequence to re-engage the limit.
+#
+# Install: sudo cp charge-limit-ac.rules /etc/udev/rules.d/99-charge-limit.rules
+# Reload:  sudo udevadm control --reload
+
+ACTION=="change", SUBSYSTEM=="power_supply", ATTR{type}=="Mains", \
+    ATTR{online}=="1", \
+    RUN+="/bin/sh -c '/usr/local/bin/set_charge_limit.sh enable | /usr/bin/systemd-cat -t charge-limit'"
