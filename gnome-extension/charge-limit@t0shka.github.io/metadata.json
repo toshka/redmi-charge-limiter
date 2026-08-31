@@ -1,0 +1,8 @@
+{
+  "uuid": "charge-limit@t0shka.github.io",
+  "name": "Battery Charge Limit",
+  "description": "Quick Settings toggle for the 80% EC battery charge limit on Redmi Book Pro 16 2024. Drives charge-limit.service over systemd; requires the bundled polkit rule for password-less switching.",
+  "shell-version": ["45", "46", "47", "48", "49", "50"],
+  "url": "https://github.com/t0shka/batlim",
+  "session-modes": ["user"]
+}
