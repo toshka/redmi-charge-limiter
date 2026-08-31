@@ -1,0 +1,25 @@
+// Let desktop users switch charge-limit.service without a password prompt.
+//
+// Scoped as tightly as polkit allows: only this one unit, only start/stop/
+// restart, only for members of the `sudo` group. Everything else about
+// systemd unit management is left to the default policy.
+//
+// Install: sudo cp 49-charge-limit.rules /etc/polkit-1/rules.d/
+//          sudo systemctl reload polkit
+
+polkit.addRule(function (action, subject) {
+    if (action.id !== "org.freedesktop.systemd1.manage-units")
+        return undefined;
+
+    if (action.lookup("unit") !== "charge-limit.service")
+        return undefined;
+
+    var verb = action.lookup("verb");
+    if (verb !== "start" && verb !== "stop" && verb !== "restart")
+        return undefined;
+
+    if (subject.isInGroup("sudo") && subject.local && subject.active)
+        return polkit.Result.YES;
+
+    return undefined;
+});

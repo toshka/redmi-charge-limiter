@@ -27,6 +27,7 @@ Additionally, the EC resets the bit when the charger is plugged in, so the limit
 | `set_charge_limit.sh` | Main script — enable / disable / status |
 | `charge-limit.service` | systemd service — applies limit on every boot |
 | `charge-limit-ac.rules` | udev rule — re-applies limit when charger is plugged in |
+| `gnome-extension/` | Optional GNOME Shell Quick Settings toggle (see below) |
 
 ---
 
@@ -122,6 +123,24 @@ sudo cp charge-limit-ac.rules /etc/udev/rules.d/99-charge-limit.rules
 sudo udevadm control --reload
 ```
 
+### 7. Optional: GNOME Quick Settings toggle
+
+Adds a **Charge Limit** pill to the GNOME system menu, next to *Dark Style* and
+*Night Light*, so the limit can be switched without a terminal.
+
+```bash
+./gnome-extension/install.sh
+```
+
+Then log out and back in (GNOME Shell cannot be reloaded in place under
+Wayland) and enable it:
+
+```bash
+gnome-extensions enable charge-limit@t0shka.github.io
+```
+
+Requires GNOME Shell 45 or newer.
+
 ---
 
 ## Usage
@@ -131,6 +150,17 @@ sudo set_charge_limit.sh enable    # engage 80% charge limit
 sudo set_charge_limit.sh disable   # remove limit (full charge)
 sudo set_charge_limit.sh status    # read current state from EC
 ```
+
+Or through systemd, which is what the GNOME toggle drives:
+
+```bash
+systemctl start charge-limit.service    # engage 80% charge limit
+systemctl stop charge-limit.service     # remove limit (full charge)
+systemctl is-active charge-limit.service
+```
+
+With the polkit rule installed (step 7), these three need no password for
+members of the `sudo` group.
 
 ---
 
@@ -144,6 +174,12 @@ Make sure the systemd service is enabled: `sudo systemctl enable charge-limit.se
 
 **Charging goes past 80% after plugging in the charger**
 Make sure the udev rule is installed (step 4). The EC resets the limit on every charger connect event.
+
+**The Quick Settings toggle flips back immediately**
+The polkit rule is missing or was not reloaded, so `systemctl start` is being
+denied. Check with `systemctl start charge-limit.service` in a terminal — if it
+prompts for a password, run `sudo systemctl reload polkit`. Extension errors are
+logged to `journalctl -f -o cat /usr/bin/gnome-shell`.
 
 **Works after manual run but not on boot**
 The `acpi_call` module may not be loaded early enough. Add it to `/etc/modules`:
